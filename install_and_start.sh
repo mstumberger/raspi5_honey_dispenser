@@ -26,17 +26,19 @@ make && sudo make install
 
 # Navigate back to the original location and set up the Python environment
 cd $START_LOCATION
+
 python3 -m venv venv
-source venv/bin/activate
-pip3 install --user -r requirements.txt
 
-# Call the script to create the desktop shortcut
-echo "Creating desktop shortcut..."
-bash shortcut/create_desktop_shortcut.sh
+# Use a subshell to run the environment
+(
+    source venv/bin/activate
+    pip3 install -r requirements.txt
 
-# Run the Python script
-cd src
-python3 .
+    # Call the script to create the desktop shortcut
+    echo "Creating desktop shortcut..."
+    bash shortcut/create_desktop_shortcut.sh
 
-#deactivate venv when finished
-deactivate
+    # Run the Python script
+    cd src
+    python3 .
+)

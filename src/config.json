@@ -15,6 +15,7 @@
     "weight_set": 900,
     "weight_before": 50,
     "jars_filled": 0,
-    "rounding": 0
+    "rounding": 0,
+    "max_steps": 20
   }
 }

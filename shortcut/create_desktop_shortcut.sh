@@ -3,16 +3,19 @@
 # Prompt for the name of the application
 app_name="HoneyDispenser"
 
-# Get the directory of the current script (i.e., the project root)
-project_root="$(dirname "$(realpath "$0")")"
+# Get the directory of the current script (shortcut folder)
+shortcut_dir="$(dirname "$(realpath "$0")")"
+
+# Get the project root by using dirname on the shortcut directory
+project_root="$(dirname "$shortcut_dir")"
 
 # Set the script path dynamically based on the project root
 script_path="$project_root/src"
 
 # Path to the icon file
-icon_path="$project_root/shortcut/icon.png"
+icon_path="$shortcut_dir/icon.png"
 
-# Display the script path for verification
+# Display the script and icon paths for verification
 echo "Using script path: $script_path"
 echo "Using icon path: $icon_path"
 
@@ -30,7 +33,7 @@ cat <<EOL > "$desktop_file"
 Version=1.0
 Name=$app_name
 Comment=Launch $app_name Application
-Exec=$user_home/$project_root/venv/bin/python3 $script_path
+Exec=$project_root/venv/bin/python3 $script_path
 Icon=$icon_path
 Terminal=false
 Type=Application

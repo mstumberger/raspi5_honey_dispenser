@@ -40,7 +40,7 @@ class ControlsFrame(tk.Frame):
         set_weight_label.grid(row=0, column=2, sticky="E")  # Align to the right
 
         self.set_weight = tk.IntVar(self, Config.instance().get(Setting.WEIGHT_SET))
-        self.set_weight.trace("w", lambda *args: Config.instance().set(Setting.WEIGHT_SET, self.set_weight.get()))
+        self.set_weight.trace("w", lambda *args: Config.instance().update(Setting.WEIGHT_SET, self.set_weight.get()))
 
         self.set_weight_value = tk.Entry(scale_frame, width=5, textvariable=self.set_weight)
         self.set_weight_value.grid(row=0, column=3, sticky="W")  # Align to the left
@@ -111,7 +111,7 @@ class ControlsFrame(tk.Frame):
 
         self.close_before_value = tk.IntVar(self, Config.instance().get(Setting.WEIGHT_BEFORE))
         # Use a lambda directly in the trace method to update the config
-        self.close_before_value.trace("w", lambda *args: Config.instance().set(Setting.WEIGHT_BEFORE, self.close_before_value.get()))
+        self.close_before_value.trace("w", lambda *args: Config.instance().update(Setting.WEIGHT_BEFORE, self.close_before_value.get()))
         close_before_spinbox = tk.Spinbox(closing_frame, from_=0, to=200, width=5, textvariable=self.close_before_value)
         close_before_spinbox.grid(row=0, column=1, sticky="W")  # Align left
 
