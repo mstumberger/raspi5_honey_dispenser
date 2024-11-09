@@ -3,6 +3,9 @@
 # Save the current directory (start location)
 START_LOCATION=$(pwd)
 
+#set rpi to performance mode
+echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+
 # Install the necessary dependencies
 sudo apt-get install -y liblgpio-dev
 

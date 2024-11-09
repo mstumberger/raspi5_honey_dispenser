@@ -65,7 +65,7 @@ class ControlsFrame(tk.Frame):
         max_steps_label.grid(row=0, column=0, sticky="E")  # Align right
 
         self.max_steps_value = tk.IntVar(self, Config.instance().get(Setting.MAX_STEPS))
-        self.max_steps_value.trace("w", lambda *args: Config.instance().set(Setting.MAX_STEPS, self.max_steps_value.get()))
+        self.max_steps_value.trace("w", lambda *args: Config.instance().update(Setting.MAX_STEPS, self.max_steps_value.get()))
         max_steps_spinbox = tk.Spinbox(lid_frame, from_=0, to=100, width=5, textvariable=self.max_steps_value)
         max_steps_spinbox.grid(row=0, column=1, sticky="W")  # Align left
 

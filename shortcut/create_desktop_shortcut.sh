@@ -41,6 +41,13 @@ Categories=Application
 EOL
 
 # Make the .desktop file executable
-chmod +x "$desktop_file"
+chmod +x $desktop_file
+
+# Add to applications menu
+sudo cp $desktop_file /usr/share/applications/
+# Make the .desktop file executable
+chmod +x /usr/share/applications/$desktop_file
+# Refresh the menu
+lxpanelctl restart
 
 echo "Desktop shortcut created successfully at $desktop_file!"
