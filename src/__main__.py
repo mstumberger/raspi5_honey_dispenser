@@ -6,15 +6,15 @@ import logging
 
 from mstumb.honey_dispenser.config import Config
 from mstumb.honey_dispenser.gui.main_window import Gui
-from mstumb.honey_dispenser.scaling import Dispenser
+from mstumb.honey_dispenser.scaling.dispenser import Dispenser
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 if __name__ == "__main__":
-    config = Config.load_from_file('mstumb/honey_dispenser/config.json')
-    dispenser = Dispenser(config, initial_weight=900, speed=0)
-    gui = Gui(dispenser, config)
+    Config.load_from_file('config.json')
+    dispenser = Dispenser()
+    gui = Gui(dispenser)
     gui.mainloop()
 
 

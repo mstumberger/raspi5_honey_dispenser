@@ -37,6 +37,21 @@ class Weight:
     def getValue(self):
         return self.hx.current_weight
 
+    # Define how to subtract two Weight objects
+    def __sub__(self, other):
+        if isinstance(other, Weight):
+            return Weight(self.hx.current_weight - other.hx.current_weight)
+        return NotImplemented
+
+    # Define how to divide a Weight object by an int
+    def __truediv__(self, other):
+        if isinstance(other, int):  # Check if the divisor is an integer
+            return Weight(self.hx / other)
+        return NotImplemented
+
+    # Define how to round a Weight object
+    def __round__(self, n=0):
+        return round(self.hx, n)
 
 class SimpleHX711:
     def __init__(self, pin1, pin2, scale, factor, rate, dispenser=None):
@@ -64,6 +79,10 @@ class SimpleHX711:
 
     def zero(self, options):
         self.current_weight = 0
+
+    # Define how to round a Weight object
+    def __round__(self, n=0):
+        return round(0, n)
 
 
 class Rate:
