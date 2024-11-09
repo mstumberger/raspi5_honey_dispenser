@@ -1,0 +1,18 @@
+{
+  "stepper": {
+    "step1": 5,
+    "step2": 6,
+    "step3": 13,
+    "step4": 12
+  },
+  "scale": {
+    "DT": 20,
+    "SCK": 21,
+    "refUnit": 731,
+    "zeroValue": 82302
+  },
+  "settings": {
+    "weight_before": 50,
+    "jars_filled": 0
+  }
+}
