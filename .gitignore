@@ -1,2 +1,4 @@
 /.idea/*
 /venv/*
+/build/*
+/src/HoneyDispenser.egg-info/*

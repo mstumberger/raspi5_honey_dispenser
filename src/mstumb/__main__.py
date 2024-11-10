@@ -11,11 +11,13 @@ from mstumb.honey_dispenser.scaling.dispenser import Dispenser
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-if __name__ == "__main__":
+def main():
     Config.load_from_file('config.json')
     dispenser = Dispenser()
     gui = Gui(dispenser)
     gui.mainloop()
 
+if __name__ == "__main__":
+    main()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

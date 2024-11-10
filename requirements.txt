@@ -1,3 +1,5 @@
 ttkbootstrap~=1.10.1
+lgpio~=0.2.2.0
+rpi-lgpio~=0.6
 hx711-rpi-py
 tk_tools

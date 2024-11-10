@@ -30,18 +30,19 @@ make && sudo make install
 # Navigate back to the original location and set up the Python environment
 cd $START_LOCATION
 
-python3 -m venv venv
+#sudo apt install python3-lgpio -y
+#sudo apt remove python3-rpi.gpio -y
+python3 -m venv --system-site-packages venv
 
 # Use a subshell to run the environment
 (
     source venv/bin/activate
-    pip3 install -r requirements.txt
-
+#    pip3 install -r requirements.txt
+    pip install .
     # Call the script to create the desktop shortcut
     echo "Creating desktop shortcut..."
     bash shortcut/create_desktop_shortcut.sh
 
     # Run the Python script
-    cd src
-    python3 .
+    dispenser &
 )

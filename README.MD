@@ -2,8 +2,8 @@
 
 ## Install
 This script will automatically:
-- install dependencies (c++ and lgpio),
 - apply patch for Raspberry PI 5,
+- install dependencies,
 - create desktop and menu entry and start the application
 
 ```console
@@ -21,7 +21,7 @@ pi@raspberrypi:~/honey_dispenser $ ./install_and_start.sh
     echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 ```
 
-- [lgpio](http://abyz.me.uk/lg/index.html) is required to be installed. It may be available to you via apt:
+- [lgpio-dev](http://abyz.me.uk/lg/index.html) is required to be installed. It may be available to you via apt:
 
 ```console
 sudo apt-get install -y liblgpio-dev
@@ -63,9 +63,5 @@ pi@raspberrypi:~/honey_dispenser $ source venv/bin/activate
 ### Run
 
 ```console
-pi@raspberrypi:~/honey_dispenser $ source venv/bin/activate
-pi@raspberrypi:~/raspi5_honey_dispenser $ cd src
-(venv) pi@raspberrypi:~/honey_dispenser $ python .
-(venv) pi@raspberrypi:~/honey_dispenser $ deactivate
+pi@raspberrypi:~ $ honey_dispenser/venv/bin/dispenser
 ```
-

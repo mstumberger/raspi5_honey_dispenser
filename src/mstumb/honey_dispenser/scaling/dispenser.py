@@ -7,12 +7,14 @@ from mstumb.honey_dispenser.config import Config, Setting, ScaleSetting, Stepper
 try:
     import RPi.GPIO as GPIO
 except ModuleNotFoundError:
+    print("Using noop GPIO")
     from mstumb.honey_dispenser.gpio.noop import GPIO
 
 simulation = False
 try:
     from HX711 import SimpleHX711, Rate, Mass, Options, ReadType
 except ModuleNotFoundError:
+    print("Using noop HX711")
     simulation = True
     from mstumb.honey_dispenser.gpio.noop import SimpleHX711, Rate, Mass, Options, ReadType
 
