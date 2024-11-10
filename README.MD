@@ -56,7 +56,7 @@ pi@raspberrypi:~ $ git clone --depth=1 https://github.com/mstumberger/raspi5_hon
 pi@raspberrypi:~ $ cd honey_dispenser
 pi@raspberrypi:~/honey_dispenser $ python3 -m venv venv
 pi@raspberrypi:~/honey_dispenser $ source venv/bin/activate
-(venv) pi@raspberrypi:~/honey_dispenser $ pip3 install -r requirements.txt
+(venv) pi@raspberrypi:~/honey_dispenser $ pip3 install .
 (venv) pi@raspberrypi:~/honey_dispenser $ deactivate
 ```
 

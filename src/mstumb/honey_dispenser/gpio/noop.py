@@ -4,6 +4,7 @@ class GPIO:
     BOTH = None
     OUT = None
     BCM = None
+    FALLING = None
 
     @staticmethod
     def setmode(arg):
@@ -18,7 +19,7 @@ class GPIO:
         pass
 
     @staticmethod
-    def add_event_detect(arg, arg1, callback=None):
+    def add_event_detect(arg, arg1, callback=None, bouncetime=2):
         pass
 
     @staticmethod
