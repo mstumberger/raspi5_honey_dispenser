@@ -59,6 +59,7 @@ class ControlsFrame(tk.Frame):
         # Configure lid_frame columns to allow content centering
         lid_frame.columnconfigure(0, weight=1)
         lid_frame.columnconfigure(1, weight=1)
+        lid_frame.columnconfigure(2, weight=1)
 
         # Labels and spinboxes
         max_steps_label = tk.Label(lid_frame, text="Max")
@@ -82,17 +83,20 @@ class ControlsFrame(tk.Frame):
         steps_spinbox = tk.Spinbox(lid_frame, from_=1, to=self.max_steps_value.get(), width=5, textvariable=self.stepper_steps)
         steps_spinbox.grid(row=2, column=1, sticky="W")  # Align left
 
+        set_zero_point_button = tk.Button(lid_frame, text="Zero", width=12, command=lambda: self.master.dispenser.set_steps_to(0))
+        set_zero_point_button.grid(row=2, column=2, pady=5, padx=10, sticky="ew")  # Span entire cell width
+
         # Centering buttons
-        left_button = tk.Button(lid_frame, text="Left", width=12,
-                                 command=lambda: self.master.dispenser.rotate_stepper(self.stepper_steps.get(), direction=1))
+        left_button = tk.Button(lid_frame, text="Left" if self.master.dispenser.direction < 1 else "Right", width=12,
+                                 command=lambda: self.master.dispenser.rotate_stepper(self.stepper_steps.get(), direction=-1))
         left_button.grid(row=3, column=0, pady=5, padx=10, sticky="ew")  # Span entire cell width
 
-        right_button = tk.Button(lid_frame, text="Right", width=12,
-                                  command=lambda: self.master.dispenser.rotate_stepper(self.stepper_steps.get(), direction=-1))
+        right_button = tk.Button(lid_frame, text="Right" if self.master.dispenser.direction < 1 else "Left", width=12,
+                                  command=lambda: self.master.dispenser.rotate_stepper(self.stepper_steps.get(), direction=1))
         right_button.grid(row=3, column=1, pady=5, padx=10, sticky="ew")  # Span entire cell width
 
         # Scale slider, centered and spanning both columns
-        self.speed_scale = tk.Scale(lid_frame, from_=0.01, to=0.0001, orient=tk.HORIZONTAL, length=80, value=0.001)
+        self.speed_scale = tk.Scale(lid_frame, from_=0.001, to=0.0001, orient=tk.HORIZONTAL, length=80, value=0.001)
         self.speed_scale.set(self.master.dispenser.speed)
         self.speed_scale.grid(row=4, column=0, columnspan=2, pady=5, padx=15, sticky="ew")  # Center horizontally, span both columns
 

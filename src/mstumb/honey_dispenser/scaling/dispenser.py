@@ -20,7 +20,7 @@ except ModuleNotFoundError:
 
 
 class Dispenser:
-    def __init__(self, speed=0.05):
+    def __init__(self, speed=0.001):
         # self.hx: SimpleHX711 = SimpleHX711(20, 21, 21, -400534, Rate.HZ_80)  # Pins for HX711
         if not simulation:
             self.hx = SimpleHX711(
@@ -103,6 +103,10 @@ class Dispenser:
 
         self.target_weight = max(0, self.target_weight)  # Avoid negative weight
         self.last_encoded = encoded
+
+    def set_steps_to(self, step):
+        print(f"Set current step to: {step}")
+        self.current_step = step
 
     def rotate_stepper(self, steps, direction=1, speed=None):
         if speed is None:
