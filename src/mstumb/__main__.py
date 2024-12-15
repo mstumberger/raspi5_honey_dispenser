@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 def main():
-    Config.load_from_file('config.json')
+    Config.load_from_file('mstumb/config.json')
     dispenser = Dispenser()
     gui = Gui(dispenser)
     gui.mainloop()

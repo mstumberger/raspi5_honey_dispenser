@@ -62,6 +62,7 @@ class Dispenser:
         GPIO.setup(self.led_pin, GPIO.OUT)
 
         self.close_before_target = 0
+        self.direction = -1
 
     def setup_scale(self):
         self.hx.setUnit(Mass.Unit.G)
@@ -116,7 +117,9 @@ class Dispenser:
             [0, 0, 1, 1],
             [0, 0, 0, 1],
         ]
-        if direction == 1:
+        # Adjust for direction
+        direction *= self.direction
+        if direction < 0:
             step_sequence.reverse()
         print(self.current_step,  direction * steps, self.current_step + direction * steps)
         for i in range(steps):
@@ -130,7 +133,8 @@ class Dispenser:
     def open_lid(self):
         print("Opening lid...")
         GPIO.output(self.led_pin, True)
-        self.rotate_stepper(self.max_steps)  # Open lid with default speed
+        # Move the lid in the direction of opening
+        self.rotate_stepper(self.max_steps, direction=self.direction)  # Use direction=1 to indicate opening
         self.lid_opened = True
 
     def position_lid(self, current_weight):
@@ -152,9 +156,9 @@ class Dispenser:
 
             # Calculate target step position based on closure level
             target_steps = int(closure_level * self.max_steps)
-            steps_to_move = (self.max_steps - self.current_step) - target_steps
+            steps_to_move = ((self.direction * self.max_steps) - (self.direction * self.current_step)) - target_steps
             direction = 1 if steps_to_move > 0 else -1  # Closing if positive, opening if negative
-
+            direction *= self.direction
             # Move the motor to the target step position if needed
             if steps_to_move != 0:
                 self.rotate_stepper(abs(steps_to_move), direction=direction)
@@ -220,3 +224,5 @@ class Dispenser:
 
     def cleanup(self):
         GPIO.cleanup()
+
+

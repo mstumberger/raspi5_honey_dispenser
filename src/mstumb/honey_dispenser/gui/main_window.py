@@ -27,8 +27,6 @@ class Gui(tk.Window):
             self.display_frame.gauge.set_value(current_weight)
             self.controls_frame.current_weight.set(current_weight)
 
-        # Update target weight and jars filled
-        self.controls_frame.set_weight.set(str(self.dispenser.target_weight))
 
         # Update current stepper step
         self.controls_frame.current_steps_value.set(self.dispenser.current_step)
@@ -39,6 +37,9 @@ class Gui(tk.Window):
         self.dispenser.speed = self.controls_frame.speed_scale.get()
         self.dispenser.max_steps = self.controls_frame.max_steps_value.get()
         self.dispenser.close_before_target = self.controls_frame.close_before_value.get()
+
+        # Update target weight
+        self.dispenser.target_weight = self.controls_frame.set_weight.get()
 
         self.after(200, self.get_reading)  # Refresh every 100ms
 
