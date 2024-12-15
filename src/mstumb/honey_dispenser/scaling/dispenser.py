@@ -155,10 +155,9 @@ class Dispenser:
                 closure_level = 1  # Lid fully closed at or above target weight
 
             # Calculate target step position based on closure level
-            target_steps = int(closure_level * self.max_steps)
+            target_steps = int(closure_level * (self.direction * self.max_steps))
             steps_to_move = ((self.direction * self.max_steps) - (self.direction * self.current_step)) - target_steps
             direction = 1 if steps_to_move > 0 else -1  # Closing if positive, opening if negative
-            direction *= self.direction
             # Move the motor to the target step position if needed
             if steps_to_move != 0:
                 self.rotate_stepper(abs(steps_to_move), direction=direction)

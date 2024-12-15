@@ -29,9 +29,10 @@ class TestStepper(unittest.TestCase):
         self.dispenser.direction = -1
         self.assertEqual(0, self.dispenser.current_step)
         self.dispenser.open_lid()
-        self.assertEqual(self.dispenser.max_steps, self.dispenser.current_step)
+        self.dispenser.check_weight(50)
+        self.assertEqual((self.dispenser.direction * self.dispenser.max_steps), (self.dispenser.direction * self.dispenser.current_step))
         self.dispenser.rotate_stepper(6)
-        self.assertEqual(self.dispenser.max_steps + 6, self.dispenser.current_step)
+        self.assertEqual((self.dispenser.direction * self.dispenser.max_steps) + 6, (self.dispenser.direction * self.dispenser.current_step))
         self.dispenser.check_weight(600)
         self.assertEqual(4, self.dispenser.current_step)
         self.dispenser.check_weight(801)
