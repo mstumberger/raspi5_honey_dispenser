@@ -42,6 +42,9 @@ class Dispenser:
         self.jars_filled = Config.instance().get(Setting.JARS_FILLED)
         self.lid_opened = False
         self.close_before_target = 0
+        self.direction = 1
+        self.speed = 1
+        self.current_step = 0
 
     def setup_scale(self):
         self.hx.setUnit(Mass.Unit.G)
@@ -67,9 +70,11 @@ class Dispenser:
     def position_lid(self, current_weight):
         # Calculate lid position based on weight
         if current_weight is not None:
-            fully_open_weight = self.target_weight / 3
-            fully_closed_weight = self.target_weight
+            # Define weights for lid positioning
+            fully_open_weight = 0  # Lid fully open at 0g
+            fully_closed_weight = self.target_weight  # Lid fully closed at target weight
 
+            # Calculate closure level: 0 (fully open) to 1 (fully closed)
             if current_weight <= fully_open_weight:
                 closure_level = 0  # Fully open
             elif fully_open_weight < current_weight < fully_closed_weight:
@@ -77,8 +82,8 @@ class Dispenser:
             else:
                 closure_level = 1  # Fully closed at or above target weight
 
-            # Map closure level to angle (0° to 180°)
-            target_angle = int(closure_level * 180)
+            # Map closure level to angle (180° open to 0° closed)
+            target_angle = int((1 - closure_level) * 180)  # Invert closure level for correct servo angle
             print(f"Setting lid angle to {target_angle}° for weight: {current_weight}g")
             self.lid_controller.set_angle(target_angle)
 

@@ -19,13 +19,14 @@ class LidController:
         # Set up PWM
         self.pwm = GPIO.PWM(SERVO_PIN, 50)  # 50 Hz (standard servo frequency)
         self.pwm.start(0)  # Start with PWM off (duty cycle 0)
+        self.set_angle(0)
 
     def set_angle(self, angle):
         """
         Set the angle of the servo motor.
         :param angle: Desired angle (0-180 degrees)
         """
-        if 0 <= angle <= 200:
+        if 0 <= angle <= 180:
             duty_cycle = 2 + (angle / 18)  # Convert angle to duty cycle
             self.pwm.ChangeDutyCycle(duty_cycle)
             time.sleep(0.5)  # Allow servo to move to position
