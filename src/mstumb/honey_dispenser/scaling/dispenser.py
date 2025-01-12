@@ -29,41 +29,19 @@ class Dispenser:
                 Config.instance().get(ScaleSetting.SCK),
                 Config.instance().get(ScaleSetting.REF_UNIT),
                 Config.instance().get(ScaleSetting.ZERO_VALUE),
-                Rate.HZ_10)
+                Rate.HZ_10
+            )
         else:
             self.hx = SimpleHX711(None, None, None, None, self)
         self.setup_scale()
-        self.lid_controller = LidController()
-        # self.stepper_pins = [  # GPIO pins for stepper motor
-        #     Config.instance().get(StepperSetting.STEP1),
-        #     Config.instance().get(StepperSetting.STEP2),
-        #     Config.instance().get(StepperSetting.STEP3),
-        #     Config.instance().get(StepperSetting.STEP4)
-        # ]
-        # self.setup_stepper()
-        self.max_steps = Config.instance().get(Setting.MAX_STEPS)
-        self.current_step = 0  # Start with the lid fully open (0 steps)
-        self.lid_opened = False
 
-        self.weight = 0
+        # Servo control for lid
+        self.lid_controller = LidController(servo_pin=18)  # Replace with your desired GPIO pin
 
-        # Stepper control
         self.target_weight = Config.instance().get(Setting.WEIGHT_SET)
         self.jars_filled = Config.instance().get(Setting.JARS_FILLED)
-        self.speed = speed  # Delay between steps for stepper motor speed adjustment
-
-        # Rotary encoder
-        self.encoder_pin_A = 17  # GPIO pin for rotary encoder A
-        self.encoder_pin_B = 27  # GPIO pin for rotary encoder B
-        self.last_encoded = 0
-        self.encoder_value = 0
-        self.setup_rotary_encoder()
-
-        self.led_pin = 23
-        GPIO.setup(self.led_pin, GPIO.OUT)
-
+        self.lid_opened = False
         self.close_before_target = 0
-        self.direction = -1
 
     def setup_scale(self):
         self.hx.setUnit(Mass.Unit.G)
@@ -76,105 +54,33 @@ class Dispenser:
         )
         print("Scale tared.")
 
-    # def setup_stepper(self):
-    #     GPIO.setmode(GPIO.BCM)
-    #     for pin in self.stepper_pins:
-    #         GPIO.setup(pin, GPIO.OUT)
-    #         GPIO.output(pin, False)
-
-    def setup_rotary_encoder(self):
-        GPIO.setup(self.encoder_pin_A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setup(self.encoder_pin_B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.add_event_detect(self.encoder_pin_A, GPIO.BOTH, callback=self.rotary_callback)
-        GPIO.add_event_detect(self.encoder_pin_B, GPIO.BOTH, callback=self.rotary_callback)
-
-    def rotary_callback(self, channel):
-        MSB = GPIO.input(self.encoder_pin_A)  # Most significant bit
-        LSB = GPIO.input(self.encoder_pin_B)  # Least significant bit
-
-        encoded = (MSB << 1) | LSB
-        delta = (encoded - self.last_encoded) % 4
-
-        if delta == 1:  # Clockwise rotation
-            self.encoder_value += 1
-            self.target_weight += 10  # Adjust weight increment
-        elif delta == 3:  # Counterclockwise rotation
-            self.encoder_value -= 1
-            self.target_weight -= 10  # Adjust weight decrement
-
-        self.target_weight = max(0, self.target_weight)  # Avoid negative weight
-        self.last_encoded = encoded
-
-    def set_steps_to(self, step):
-        print(f"Set current step to: {step}")
-        self.current_step = step
-
-    def rotate_stepper(self, steps, direction=1, speed=None):
-        if speed is None:
-            speed = self.speed  # Use default speed if not provided
-        # step_sequence = [
-        #     [1, 0, 0, 1],
-        #     [1, 0, 0, 0],
-        #     [1, 1, 0, 0],
-        #     [0, 1, 0, 0],
-        #     [0, 1, 1, 0],
-        #     [0, 0, 1, 0],
-        #     [0, 0, 1, 1],
-        #     [0, 0, 0, 1],
-        # ]
-        # # Adjust for direction
-        # direction *= self.direction
-        if direction < 0:
-            # step_sequence.reverse()
-            steps = abs(abs(steps) -180)
-        print(self.current_step,  direction * steps, self.current_step + direction * steps)
-        self.lid_controller.set_angle(steps)
-        # for i in range(steps):
-        #     for step in step_sequence:
-        #         for pin in range(4):
-        #             GPIO.output(self.stepper_pins[pin], step[pin])
-        #         time.sleep(speed)
-
-        self.current_step += direction * steps
-
     def open_lid(self):
         print("Opening lid...")
-        GPIO.output(self.led_pin, True)
-        # Move the lid in the direction of opening
-        self.rotate_stepper(self.max_steps, direction=self.direction)  # Use direction=1 to indicate opening
+        self.lid_controller.set_angle(180)  # Fully open the lid
         self.lid_opened = True
-
-    def position_lid(self, current_weight):
-        if current_weight is not None:
-            current_weight_log = current_weight
-            current_weight += self.close_before_target
-
-            # Define weights for lid positioning
-            fully_open_weight = self.target_weight / 3
-            fully_closed_weight = self.target_weight
-
-            # Calculate closure level: 0 (open) to 1 (closed) as weight approaches the target
-            if current_weight <= fully_open_weight:
-                closure_level = 0  # Lid fully open
-            elif fully_open_weight < current_weight < fully_closed_weight:
-                closure_level = (current_weight - fully_open_weight) / (fully_closed_weight - fully_open_weight)
-            else:
-                closure_level = 1  # Lid fully closed at or above target weight
-
-            # Calculate target step position based on closure level
-            target_steps = int(closure_level * (self.direction * self.max_steps))
-            steps_to_move = ((self.direction * self.max_steps) - (self.direction * self.current_step)) - target_steps
-            direction = 1 if steps_to_move > 0 else -1  # Closing if positive, opening if negative
-            # Move the motor to the target step position if needed
-            if steps_to_move != 0:
-                self.rotate_stepper(abs(steps_to_move), direction=direction)
-
-            print(f"Current Weight: {current_weight_log}g with closing before {self.close_before_target}g, Lid Step Position: {self.current_step}/{self.max_steps}")
 
     def close_lid(self):
         print("Closing lid...")
-        GPIO.output(self.led_pin, False)
+        self.lid_controller.set_angle(0)  # Fully close the lid
         self.lid_opened = False
+
+    def position_lid(self, current_weight):
+        # Calculate lid position based on weight
+        if current_weight is not None:
+            fully_open_weight = self.target_weight / 3
+            fully_closed_weight = self.target_weight
+
+            if current_weight <= fully_open_weight:
+                closure_level = 0  # Fully open
+            elif fully_open_weight < current_weight < fully_closed_weight:
+                closure_level = (current_weight - fully_open_weight) / (fully_closed_weight - fully_open_weight)
+            else:
+                closure_level = 1  # Fully closed at or above target weight
+
+            # Map closure level to angle (0° to 180°)
+            target_angle = int(closure_level * 180)
+            print(f"Setting lid angle to {target_angle}° for weight: {current_weight}g")
+            self.lid_controller.set_angle(target_angle)
 
     def get_weight(self):
         try:
@@ -229,6 +135,6 @@ class Dispenser:
         # save to settings for next time
 
     def cleanup(self):
+        self.lid_controller.close()
         GPIO.cleanup()
-
 
