@@ -29,6 +29,10 @@ class GPIO:
     def cleanup():
         pass
 
+    @classmethod
+    def PWM(cls, SERVO_PIN, param):
+        pass
+
 
 class Weight:
     def __init__(self, hx):

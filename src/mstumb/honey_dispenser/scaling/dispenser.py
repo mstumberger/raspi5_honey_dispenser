@@ -3,6 +3,7 @@ import time
 from datetime import timedelta
 
 from mstumb.honey_dispenser.config import Config, Setting, ScaleSetting, StepperSetting
+from mstumb.honey_dispenser.gpio.servo import LidController
 
 try:
     import RPi.GPIO as GPIO
@@ -32,14 +33,14 @@ class Dispenser:
         else:
             self.hx = SimpleHX711(None, None, None, None, self)
         self.setup_scale()
-
-        self.stepper_pins = [  # GPIO pins for stepper motor
-            Config.instance().get(StepperSetting.STEP1),
-            Config.instance().get(StepperSetting.STEP2),
-            Config.instance().get(StepperSetting.STEP3),
-            Config.instance().get(StepperSetting.STEP4)
-        ]
-        self.setup_stepper()
+        self.lid_controller = LidController()
+        # self.stepper_pins = [  # GPIO pins for stepper motor
+        #     Config.instance().get(StepperSetting.STEP1),
+        #     Config.instance().get(StepperSetting.STEP2),
+        #     Config.instance().get(StepperSetting.STEP3),
+        #     Config.instance().get(StepperSetting.STEP4)
+        # ]
+        # self.setup_stepper()
         self.max_steps = Config.instance().get(Setting.MAX_STEPS)
         self.current_step = 0  # Start with the lid fully open (0 steps)
         self.lid_opened = False
@@ -75,11 +76,11 @@ class Dispenser:
         )
         print("Scale tared.")
 
-    def setup_stepper(self):
-        GPIO.setmode(GPIO.BCM)
-        for pin in self.stepper_pins:
-            GPIO.setup(pin, GPIO.OUT)
-            GPIO.output(pin, False)
+    # def setup_stepper(self):
+    #     GPIO.setmode(GPIO.BCM)
+    #     for pin in self.stepper_pins:
+    #         GPIO.setup(pin, GPIO.OUT)
+    #         GPIO.output(pin, False)
 
     def setup_rotary_encoder(self):
         GPIO.setup(self.encoder_pin_A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -111,26 +112,28 @@ class Dispenser:
     def rotate_stepper(self, steps, direction=1, speed=None):
         if speed is None:
             speed = self.speed  # Use default speed if not provided
-        step_sequence = [
-            [1, 0, 0, 1],
-            [1, 0, 0, 0],
-            [1, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 1, 1, 0],
-            [0, 0, 1, 0],
-            [0, 0, 1, 1],
-            [0, 0, 0, 1],
-        ]
-        # Adjust for direction
-        direction *= self.direction
+        # step_sequence = [
+        #     [1, 0, 0, 1],
+        #     [1, 0, 0, 0],
+        #     [1, 1, 0, 0],
+        #     [0, 1, 0, 0],
+        #     [0, 1, 1, 0],
+        #     [0, 0, 1, 0],
+        #     [0, 0, 1, 1],
+        #     [0, 0, 0, 1],
+        # ]
+        # # Adjust for direction
+        # direction *= self.direction
         if direction < 0:
-            step_sequence.reverse()
+            # step_sequence.reverse()
+            steps = abs(abs(steps) -180)
         print(self.current_step,  direction * steps, self.current_step + direction * steps)
-        for i in range(steps):
-            for step in step_sequence:
-                for pin in range(4):
-                    GPIO.output(self.stepper_pins[pin], step[pin])
-                time.sleep(speed)
+        self.lid_controller.set_angle(steps)
+        # for i in range(steps):
+        #     for step in step_sequence:
+        #         for pin in range(4):
+        #             GPIO.output(self.stepper_pins[pin], step[pin])
+        #         time.sleep(speed)
 
         self.current_step += direction * steps
 
