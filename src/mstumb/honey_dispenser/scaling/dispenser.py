@@ -3,6 +3,7 @@ import time
 from datetime import timedelta
 
 from mstumb.honey_dispenser.config import Config, Setting, ScaleSetting, StepperSetting
+from mstumb.honey_dispenser.gpio.cooler import CoolerController
 from mstumb.honey_dispenser.gpio.servo import LidController
 
 try:
@@ -20,6 +21,8 @@ except ModuleNotFoundError:
     from mstumb.honey_dispenser.gpio.noop import SimpleHX711, Rate, Mass, Options, ReadType
 
 
+
+
 class Dispenser:
     def __init__(self, speed=0.001):
         # self.hx: SimpleHX711 = SimpleHX711(20, 21, 21, -400534, Rate.HZ_80)  # Pins for HX711
@@ -34,6 +37,7 @@ class Dispenser:
         else:
             self.hx = SimpleHX711(None, None, None, None, self)
         self.setup_scale()
+        self.cooling_controller = CoolerController()
 
         # Servo control for lid
         self.lid_controller = LidController(servo_pin=18)  # Replace with your desired GPIO pin

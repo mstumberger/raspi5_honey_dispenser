@@ -31,7 +31,11 @@ class GPIO:
 
     @classmethod
     def PWM(cls, SERVO_PIN, param):
-        pass
+        class PWM:
+            def start(self, value=0):
+                pass
+
+        return PWM()
 
 
 class Weight:

@@ -42,6 +42,7 @@ class Gui(tk.Window):
         # Update target weight
         self.dispenser.target_weight = self.controls_frame.set_weight.get()
 
+        # Update fan speed
+        self.dispenser.cooling_controller.update_fan_speed()
+
         self.after(200, self.get_reading)  # Refresh every 100ms
-
-
