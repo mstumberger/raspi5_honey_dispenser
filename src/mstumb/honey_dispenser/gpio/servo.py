@@ -21,16 +21,37 @@ class LidController:
         self.pwm.start(0)  # Start with PWM off (duty cycle 0)
         self.set_angle(0)
 
-    def set_angle(self, angle):
+    def set_angle(self, angle, speed=0.5):
         """
-        Set the angle of the servo motor.
+        Set the angle of the servo motor with adjustable speed.
         :param angle: Desired angle (0-180 degrees)
+        :param speed: Speed factor (1.0 is default, >1 is slower, <1 is faster)
         """
+        angle = abs(angle)
         if 0 <= angle <= 180:
-            duty_cycle = 2 + (angle / 18)  # Convert angle to duty cycle
-            self.pwm.ChangeDutyCycle(duty_cycle)
-            time.sleep(0.5)  # Allow servo to move to position
+            # Determine current angle
+            current_duty = 2 + (self.current_angle / 18) if hasattr(self, 'current_angle') else 0
+            target_duty = 2 + (angle / 18)
+
+            # Gradual movement
+            step = 0.1 if speed > 1 else 0.2  # Smaller steps for slower speeds
+            step = step * (1.0 / speed)  # Adjust step size by speed factor
+
+            if current_duty < target_duty:
+                duty_range = range(int(current_duty * 10), int(target_duty * 10), int(step * 10))
+            else:
+                duty_range = range(int(current_duty * 10), int(target_duty * 10), -int(step * 10))
+
+            for duty in map(lambda x: x / 10, duty_range):
+                self.pwm.ChangeDutyCycle(duty)
+                time.sleep(0.02)  # Delay for smooth movement
+
+            # Set final duty cycle
+            self.pwm.ChangeDutyCycle(target_duty)
+            time.sleep(0.5)  # Allow the servo to stabilize at the target position
             self.pwm.ChangeDutyCycle(0)  # Turn off PWM to avoid jitter
+
+            self.current_angle = angle
         else:
             print("Angle out of range. Must be between 0 and 180 degrees.")
 
