@@ -18,7 +18,7 @@ pi@raspberrypi:~/honey_dispenser $ ./install_and_start.sh
 - Set rpi to performance mode:
 
 ```console
-    echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 ```
 
 - [lgpio-dev](http://abyz.me.uk/lg/index.html) is required to be installed. It may be available to you via apt:
@@ -93,3 +93,44 @@ Run the following commands:
 Or to view live logs:
 
     journalctl -u fan_controller.service -f
+
+### Tkiter application service
+
+1. Create a Systemd Service
+
+Copy service/tkinter_app.service to /etc/systemd/system/tkinter_app.service:
+
+    
+    sudo cp service/tkinter_app.service /etc/systemd/system/tkinter_app.service
+
+
+2. Enable the Service
+
+Run the following commands:
+
+    sudo systemctl daemon-reload  # Reload systemd
+    sudo systemctl enable tkinter_app.service  # Enable service on boot
+    sudo systemctl start tkinter_app.service  # Start the service now
+
+
+3. Check if the service is running:
+
+    sudo systemctl status tkinter_app.service
+
+Or to view live logs:
+
+    journalctl -u tkinter_app.service -f
+
+    sudo systemctl stop tkinter_app.service
+
+# Shutdown
+
+To allow passwordless shutdown, you can edit the sudoers file:
+
+
+    sudo visudo
+
+
+Add the following line :
+
+    pi ALL=(ALL) NOPASSWD: /sbin/shutdown
