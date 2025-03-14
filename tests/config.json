@@ -14,7 +14,7 @@
   "settings": {
     "weight_set": 800,
     "weight_before": 50,
-    "jars_filled": 0,
+    "jars_filled": 4,
     "rounding": 1,
     "max_steps": 10
   }

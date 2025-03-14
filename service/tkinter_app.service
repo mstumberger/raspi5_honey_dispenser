@@ -1,0 +1,14 @@
+[Unit]
+Description=Tkinter App Autostart
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/home/pi/raspi5_honey_dispenser/venv/bin/dispenser
+Restart=always
+User=pi
+WorkingDirectory=/home/pi/raspi5_honey_dispenser/
+Environment=DISPLAY=:0
+
+[Install]
+WantedBy=multi-user.target
