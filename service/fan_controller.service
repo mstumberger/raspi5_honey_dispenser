@@ -1,0 +1,15 @@
+[Unit]
+Description=Fan Cooler Controller Service
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/pi/raspi5_honey_dispenser/src/mstumb/honey_dispenser/gpio/cooler.py
+Restart=always
+User=pi
+WorkingDirectory=/home/pi/raspi5_honey_dispenser/src/
+StandardOutput=inherit
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

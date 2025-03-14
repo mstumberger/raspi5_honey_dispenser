@@ -1,5 +1,7 @@
 import os
 import time
+import threading
+from collections import deque
 
 try:
     import RPi.GPIO as GPIO
@@ -7,19 +9,24 @@ except ModuleNotFoundError:
     print("Using noop GPIO")
     from mstumb.honey_dispenser.gpio.noop import GPIO
 
-FAN_PWM_PIN = 18  # PWM control pin
-FAN_TACH_PIN = 17  # Tachometer pin (for RPM measurement)
-TEMP_MIN = 40  # Temperature to start fan (°C)
-TEMP_MAX = 80  # Temperature for full speed (°C)
+FAN_PWM_PIN = 19  # PWM control pin
+FAN_TACH_PIN = 16  # Tachometer pin (for RPM measurement)
+TEMP_MIN = 55  # Temperature to start fan (°C)
+TEMP_MAX = 75  # Temperature for full speed (°C)
+TEMP_HISTORY_SIZE = 3  # Number of temperature readings to average
 
 
-class CoolerController:
-    def __init__(self, pwm_pin=FAN_PWM_PIN, tach_pin=FAN_TACH_PIN, pwm_freq=25000):
+class CoolerController(threading.Thread):
+    def __init__(self, pwm_pin=FAN_PWM_PIN, tach_pin=FAN_TACH_PIN, pwm_freq=10000, interval=5):
         """Initialize fan controller with PWM and RPM monitoring"""
+        super().__init__()  # Initialize the Thread base class
         self.pwm_pin = pwm_pin
         self.tach_pin = tach_pin
         self.pwm_freq = pwm_freq
+        self.interval = interval
         self.pulse_count = 0
+        self.running = False
+        self.temp_history = deque(maxlen=TEMP_HISTORY_SIZE)  # Store last 3 temperature readings
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.pwm_pin, GPIO.OUT)
@@ -35,6 +42,7 @@ class CoolerController:
     def count_pulse(self, channel):
         """Counts pulses from the fan's tachometer output"""
         self.pulse_count += 1
+
 
     def get_cpu_temp(self):
         """Reads the CPU temperature"""
@@ -58,30 +66,50 @@ class CoolerController:
         return rpm
 
     def update_fan_speed(self):
-        """Updates the fan speed based on CPU temperature"""
+        """Updates the fan speed based on the average of the last three temperature readings"""
         temp = self.get_cpu_temp()
-        speed = self.calculate_fan_speed(temp)
+        self.temp_history.append(temp)  # Store new temperature reading
+
+        if len(self.temp_history) < TEMP_HISTORY_SIZE:
+            avg_temp = temp  # Not enough readings yet, use the current temp
+        else:
+            avg_temp = sum(self.temp_history) / len(self.temp_history)
+
+        speed = self.calculate_fan_speed(avg_temp)
         self.fan.ChangeDutyCycle(speed)
         rpm = self.get_rpm()
-        print(f"Temp: {temp}°C -> Fan Speed: {speed:.1f}% -> RPM: {rpm:.1f}")
+        print(f"Temp: {temp}°C (Avg: {avg_temp:.1f}°C) -> Fan Speed: {speed:.1f}% -> RPM: {rpm:.1f}")
 
-    def run(self, interval=5):
+    def run(self):
         """Main loop to monitor temperature and adjust fan speed"""
+        self.running = True
         try:
-            while True:
+            while self.running:
                 self.update_fan_speed()
-                time.sleep(interval)
+                time.sleep(self.interval)
         except KeyboardInterrupt:
             self.cleanup()
 
+    def stop(self):
+        """Stops the fan control loop"""
+        self.running = False
+
     def cleanup(self):
         """Stops the fan and cleans up GPIO"""
+        self.fan.ChangeDutyCycle(0)
         self.fan.stop()
-        GPIO.cleanup()
+        # GPIO.cleanup()
         print("Fan control stopped. GPIO cleaned up.")
 
 
-# Create an instance of the FanController and run it
+# Example usage
 if __name__ == "__main__":
-    fan_controller = CoolerController(FAN_PWM_PIN, FAN_TACH_PIN)
-    fan_controller.run()
+    fan_controller = CoolerController(interval=5)
+    fan_controller.start()  # Start the thread
+
+    # Main thread can continue doing other work
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        fan_controller.cleanup()  # Clean up GPIO

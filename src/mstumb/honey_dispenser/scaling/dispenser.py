@@ -3,6 +3,7 @@ import time
 from datetime import timedelta
 
 from mstumb.honey_dispenser.config import Config, Setting, ScaleSetting, StepperSetting
+from mstumb.honey_dispenser.gpio.buzzer import PiezoBuzzer
 from mstumb.honey_dispenser.gpio.cooler import CoolerController
 from mstumb.honey_dispenser.gpio.servo import LidController
 
@@ -37,7 +38,8 @@ class Dispenser:
         else:
             self.hx = SimpleHX711(None, None, None, None, self)
         self.setup_scale()
-        self.cooling_controller = CoolerController()
+        # self.cooling_controller = CoolerController()
+        # self.cooling_controller.start()
 
         # Servo control for lid
         self.lid_controller = LidController(servo_pin=18)  # Replace with your desired GPIO pin
@@ -55,6 +57,8 @@ class Dispenser:
 
         self.led_pin = 23
         GPIO.setup(self.led_pin, GPIO.OUT)
+
+        self.buzzer = PiezoBuzzer(pin=12)  # Use GPIO 18 for the buzzer
         self.close_before_target = 0
         self.direction = 1
         self.speed = 1
@@ -74,6 +78,7 @@ class Dispenser:
     def open_lid(self):
         print("Opening lid...")
         GPIO.output(self.led_pin, True)
+        self.buzzer.start_sound()
         self.lid_controller.set_angle(self.max_steps)  # Fully open the lid
         self.lid_opened = True
 
@@ -107,6 +112,7 @@ class Dispenser:
     def close_lid(self):
         print("Closing lid...")
         GPIO.output(self.led_pin, False)
+        self.buzzer.success_sound()
         self.lid_controller.set_angle(0)  # Fully close the lid
         self.lid_opened = False
 
@@ -135,6 +141,8 @@ class Dispenser:
                 self.jars_filled += 1
                 Config.instance().update(Setting.JARS_FILLED, self.jars_filled)
                 print(f"Jar filled! Total jars: {self.jars_filled}")
+            else:
+                self.buzzer.filling_sound()
         return weight
 
     def calibrate(self):
@@ -164,4 +172,5 @@ class Dispenser:
 
     def cleanup(self):
         self.lid_controller.close()
+        self.buzzer.cleanup()
         GPIO.cleanup()

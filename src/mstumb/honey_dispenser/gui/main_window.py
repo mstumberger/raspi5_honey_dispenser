@@ -10,6 +10,8 @@ from mstumb.honey_dispenser.gui.frames.top_frame import TopFrame
 class Gui(tk.Window):
     def __init__(self, dispenser):
         tk.Window.__init__(self, title="Honey Dispenser", themename='darkly')
+        # Start in fullscreen mode
+        self.attributes('-fullscreen', True)
         self.geometry("600x400")  # Set a default size for the window
         self.dispenser = dispenser
         self.top_frame = TopFrame(self)
@@ -41,8 +43,5 @@ class Gui(tk.Window):
 
         # Update target weight
         self.dispenser.target_weight = self.controls_frame.set_weight.get()
-
-        # Update fan speed
-        self.dispenser.cooling_controller.update_fan_speed()
 
         self.after(200, self.get_reading)  # Refresh every 100ms

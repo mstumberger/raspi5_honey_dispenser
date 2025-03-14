@@ -36,6 +36,7 @@ cat <<EOL > "$desktop_file_path"
 Version=1.0
 Name=$app_name
 Comment=Launch $app_name Application
+Path=$project_root
 Exec=$project_root/$script_path
 Icon=$icon_path
 Terminal=false

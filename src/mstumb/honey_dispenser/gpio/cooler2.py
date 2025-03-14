@@ -2,11 +2,11 @@ import os
 import time
 import lgpio
 
-FAN_PWM_PIN = 18  # PWM control pin (BCM)
-FAN_TACH_PIN = 17  # Tachometer pin (BCM)
-TEMP_MIN = 40  # Temperature to start fan (°C)
+FAN_PWM_PIN = 19   # PWM control pin (BCM)
+FAN_TACH_PIN = 16  # Tachometer pin (BCM)
+TEMP_MIN = 55  # Temperature to start fan (°C)
 TEMP_MAX = 80  # Temperature for full speed (°C)
-PWM_FREQ = 25000  # 25 kHz
+PWM_FREQ = 10000  # 25 kHz
 
 class CoolerController:
     def __init__(self, pwm_pin, tach_pin, pwm_freq=PWM_FREQ):
@@ -23,7 +23,6 @@ class CoolerController:
 
         # Set up tachometer input
         lgpio.gpio_claim_input(self.h, self.tach_pin)
-        lgpio.gpio_set_edge(self.h, self.tach_pin, lgpio.RISING_EDGE)
         lgpio.callback(self.h, self.tach_pin, lgpio.RISING_EDGE, self.count_pulse)
 
     def count_pulse(self, chip, gpio, level, timestamp):

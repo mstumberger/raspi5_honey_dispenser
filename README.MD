@@ -65,3 +65,31 @@ pi@raspberrypi:~/honey_dispenser $ source venv/bin/activate
 ```console
 pi@raspberrypi:~ $ honey_dispenser/venv/bin/dispenser
 ```
+
+
+### Cooling Service
+
+1. Create a Systemd Service
+
+Copy service/fan_controller.service to /etc/systemd/system/fan_controller.service:
+    
+    sudo cp service/fan_controller.service /etc/systemd/system/fan_controller.service
+
+
+2. Enable the Service
+
+Run the following commands:
+
+    sudo chmod +x /home/pi/fan_controller.py  # Ensure it's executable
+    sudo systemctl daemon-reload  # Reload systemd
+    sudo systemctl enable fan_controller.service  # Enable service on boot
+    sudo systemctl start fan_controller.service  # Start the service now
+
+
+3. Check if the service is running:
+
+    sudo systemctl status fan_controller.service
+
+Or to view live logs:
+
+    journalctl -u fan_controller.service -f
