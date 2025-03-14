@@ -83,6 +83,7 @@ class ControlsFrame(tk.Frame):
         steps_spinbox = tk.Spinbox(lid_frame, from_=1, to=self.max_steps_value.get(), width=5, textvariable=self.stepper_steps)
         steps_spinbox.grid(row=2, column=1, sticky="W")  # Align left
 
+        # TODO: Fix motor moving
         set_zero_point_button = tk.Button(lid_frame, text="Zero", width=12, command=lambda: self.master.dispenser.set_steps_to(0))
         set_zero_point_button.grid(row=2, column=2, pady=5, padx=10, sticky="ew")  # Span entire cell width
 
@@ -104,21 +105,67 @@ class ControlsFrame(tk.Frame):
         closing_frame = tk.LabelFrame(control_frame, text="Closing")
         closing_frame.grid(row=2, column=0, padx=5, pady=5, sticky="nsew")
 
-        # Configure lid_frame columns to allow content centering
-        closing_frame.columnconfigure(0, weight=1)
-        closing_frame.columnconfigure(1, weight=1)
-        closing_frame.columnconfigure(2, weight=1)  # Added for unit label
+        # Configure closing_frame grid
+        closing_frame.grid_rowconfigure(0, weight=1)
+        closing_frame.grid_columnconfigure(0, weight=1)
+        closing_frame.grid_columnconfigure(1, weight=1)
+        closing_frame.grid_columnconfigure(2, weight=1)
+        closing_frame.grid_columnconfigure(3, weight=1)
 
-        # Labels and spinboxes
+        # Labels and input box with buttons
         max_steps_label = tk.Label(closing_frame, text="Close before")
-        max_steps_label.grid(row=0, column=0, sticky="E")  # Align right
+        max_steps_label.grid(row=0, column=0, sticky="E", padx=5, pady=5)
 
-        self.close_before_value = tk.IntVar(self, Config.instance().get(Setting.WEIGHT_BEFORE))
-        # Use a lambda directly in the trace method to update the config
-        self.close_before_value.trace("w", lambda *args: Config.instance().update(Setting.WEIGHT_BEFORE, self.close_before_value.get()))
-        close_before_spinbox = tk.Spinbox(closing_frame, from_=0, to=200, width=5, textvariable=self.close_before_value)
-        close_before_spinbox.grid(row=0, column=1, sticky="W")  # Align left
+        # Disabled input box
+        self.close_before_value = tk.IntVar(value=100)  # Default value
+        self.close_before_entry = tk.Entry(closing_frame, textvariable=self.close_before_value, state="readonly",
+                                           width=5)
+        self.close_before_entry.grid(row=0, column=1, sticky="W", padx=5, pady=5)
 
-        # Add "g" label next to the spinbox
+        # Add "g" label next to the input box
         unit_label = tk.Label(closing_frame, text="g")
-        unit_label.grid(row=0, column=2, sticky="W")
+        unit_label.grid(row=0, column=2, sticky="W", padx=1, pady=5)
+
+        # "-" button to decrement value
+        decrement_button = tk.Button(closing_frame, text="-", width=7, command=lambda: self.update_value(-1))
+        decrement_button.grid(row=0, column=3, sticky="W", padx=1, pady=5)
+        decrement_button.bind("<ButtonPress-1>", lambda event: self.start_continuous_update(-1))
+        decrement_button.bind("<ButtonRelease-1>", self.stop_continuous_update)
+
+        # "+" button to increment value
+        increment_button = tk.Button(closing_frame, text="+", width=7, command=lambda: self.update_value(1))
+        increment_button.grid(row=0, column=4, sticky="W", padx=5, pady=5)
+        increment_button.bind("<ButtonPress-1>", lambda event: self.start_continuous_update(1))
+        increment_button.bind("<ButtonRelease-1>", self.stop_continuous_update)
+
+
+        # Variables for continuous update
+        self.continuous_update = False
+        self.update_direction = 0
+        self.update_delay = 200  # Initial delay in milliseconds
+
+    def update_value(self, delta):
+        """Update the value by delta."""
+        current_value = self.close_before_value.get()
+        new_value = max(0, current_value + delta)  # Ensure value doesn't go below 0
+        self.close_before_value.set(new_value)
+
+    def start_continuous_update(self, direction):
+        """Start continuous update when the button is held down."""
+        self.continuous_update = True
+        self.update_direction = direction
+        self.continuous_update_loop()
+
+    def stop_continuous_update(self, event=None):
+        """Stop continuous update when the button is released."""
+        self.continuous_update = False
+
+    def continuous_update_loop(self):
+        """Continuously update the value while the button is held down."""
+        if self.continuous_update:
+            self.update_value(self.update_direction)
+            # Speed up the update after the first iteration
+            self.update_delay = max(50, self.update_delay - 10)  # Minimum delay of 50ms
+            self.after(self.update_delay, self.continuous_update_loop)
+        else:
+            self.update_delay = 200  # Reset delay when button is released
