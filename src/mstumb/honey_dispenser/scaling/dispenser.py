@@ -182,8 +182,8 @@ class Dispenser:
             ref_unit = 1
 
         # Set reference unit and offset
-        self.hx.setReferenceUnit(str(round(ref_unit)))
-        self.hx.setOffset(str(round(zero_value)))
+        self.hx.setReferenceUnit(ref_unit)
+        self.hx.setOffset(zero_value)
 
         # Save calibration values to config
         Config.instance().update(ScaleSetting.ZERO_VALUE, zero_value)
