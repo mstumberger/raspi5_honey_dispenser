@@ -1,4 +1,8 @@
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except ModuleNotFoundError:
+    print("Using noop GPIO")
+    from mstumb.honey_dispenser.gpio.noop import GPIO
 import time
 import threading
 

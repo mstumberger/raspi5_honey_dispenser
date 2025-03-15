@@ -1,11 +1,13 @@
 # sudo adduser pi gpio # enable using gpio without sudo!!
 import time
 from datetime import timedelta
+from tkinter import messagebox
 
 from mstumb.honey_dispenser.config import Config, Setting, ScaleSetting, StepperSetting
 from mstumb.honey_dispenser.gpio.buzzer import PiezoBuzzer
 from mstumb.honey_dispenser.gpio.cooler import CoolerController
 from mstumb.honey_dispenser.gpio.servo import LidController
+from mstumb.honey_dispenser.gui.top_level import KnownWeightDialog
 
 try:
     import RPi.GPIO as GPIO
@@ -36,7 +38,7 @@ class Dispenser:
                 Rate.HZ_10
             )
         else:
-            self.hx = SimpleHX711(None, None, None, None, self)
+            self.hx = SimpleHX711(None, None, None, None, None, self)
         self.setup_scale()
         # self.cooling_controller = CoolerController()
         # self.cooling_controller.start()
@@ -146,29 +148,49 @@ class Dispenser:
         return weight
 
     def calibrate(self):
-        print("Calibration started.")
-        knownWeight = 200
+        """Perform the calibration process with user confirmation at each step."""
+        if not messagebox.askokcancel("Calibration", "Calibration started. Proceed?"):
+            return
+
+        # Step 1: Remove all objects from the scale
+        if not messagebox.askokcancel("Step 1", "Remove all objects from the scale. Click OK to continue."):
+            return
+
+        # Step 2: Get the known weight from the user
+        known_weight = KnownWeightDialog().result
+        if known_weight is None:  # User clicked Cancel
+            return
+
         samples = 50
 
-        print("1. Remove all objects from the scale, you have 10s")
-        time.sleep(2)
         print("Working...")
-        zeroValue = self.hx.read(Options(int(samples)))
+        zero_value = self.hx.read(Options(int(samples)))  # Read zero value
+        print(f"Zero value measured: {zero_value}")
 
-        print("2. Place object on the scale, you have 10s")
-        time.sleep(2)
+        # Step 2: Place the known weight on the scale
+        if not messagebox.askokcancel("Step 2", f"Place the {known_weight}g weight on the scale. Click OK to continue."):
+            return
+
         print("Working...")
-        raw = self.hx.read(Options(int(samples)))
-        refUnitFloat = (raw - zeroValue) / knownWeight
-        refUnit = round(refUnitFloat, 0)
+        raw = self.hx.read(Options(int(samples)))  # Read raw value with known weight
+        print(f"Raw value with weight measured: {raw}")
 
-        if refUnit == 0:
-            refUnit = 1
+        # Calculate reference unit
+        ref_unit_float = (raw - zero_value) / known_weight
+        ref_unit = round(ref_unit_float, 0)
+        if ref_unit == 0:
+            ref_unit = 1
 
-        self.hx.setReferenceUnit(str(round(refUnit)))
-        self.hx.setOffset(str(round(zeroValue)))
+        # Set reference unit and offset
+        self.hx.setReferenceUnit(ref_unit)
+        self.hx.setOffset(zero_value)
 
-        # save to settings for next time
+        # Save calibration values to config
+        Config.instance().update(ScaleSetting.ZERO_VALUE, zero_value)
+        Config.instance().update(ScaleSetting.REF_UNIT, ref_unit)
+
+        messagebox.showinfo("Calibration Complete", f"Calibration complete!\nZERO_VALUE: {zero_value}\nREF_UNIT: {ref_unit}")
+
 
     def cleanup(self):
         self.lid_controller.close()

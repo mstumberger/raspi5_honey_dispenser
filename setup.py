@@ -20,6 +20,7 @@ setup(
         'mstumb.honey_dispenser.gui',
         'mstumb.honey_dispenser.gui.gauge',
         'mstumb.honey_dispenser.gui.frames',
+        'mstumb.honey_dispenser.gui.top_level',
         'mstumb.honey_dispenser.gpio',
         'mstumb.honey_dispenser.config',
         'mstumb.honey_dispenser.scaling'

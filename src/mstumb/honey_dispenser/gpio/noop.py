@@ -36,6 +36,18 @@ class GPIO:
             def start(self, value=0):
                 pass
 
+            def stop(self, value=0):
+                pass
+
+            @staticmethod
+            def ChangeDutyCycle(frequency):
+                pass
+
+            @staticmethod
+            def ChangeFrequency(frequency):
+                # Implement the logic to change the frequency here
+                pass
+
         return PWM()
 
 
