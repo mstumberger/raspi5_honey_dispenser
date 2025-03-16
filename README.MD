@@ -63,6 +63,8 @@ Total costs:
 19. Calibrate Scale: Calibrate the scale using a known weight to ensure accuracy.
 20. Start Honey Dispensing: Once calibration is complete and saved, you can begin dispensing honey
 
+![schematics](img/honey_dispenser.gif)
+
 ## Install
 This script will automatically:
 - apply patch for Raspberry PI 5 HX711 library,
