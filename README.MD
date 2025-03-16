@@ -151,6 +151,7 @@ Run the following commands:
 
 3. Check if the service is running:
 
+
     sudo systemctl status fan_controller.service
 
 Or to view live logs:
@@ -178,13 +179,19 @@ Run the following commands:
 
 3. Check if the service is running:
 
+
     sudo systemctl status tkinter_app.service
 
 Or to view live logs:
 
     journalctl -u tkinter_app.service -f
 
+
+4. Stop running service:
+
+
     sudo systemctl stop tkinter_app.service
+
 
 # Shutdown
 
