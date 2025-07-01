@@ -56,10 +56,15 @@ class ControlsFrame(tk.Frame):
         lid_frame = tk.LabelFrame(control_frame, text="Lid")
         lid_frame.grid(row=1, column=0, padx=5, pady=5, sticky="nsew")
 
-        # Configure lid_frame columns to allow content centering
-        lid_frame.columnconfigure(0, weight=1)
-        lid_frame.columnconfigure(1, weight=1)
-        lid_frame.columnconfigure(2, weight=1)
+        # # Configure lid_frame columns to allow content centering
+        # lid_frame.columnconfigure(0, weight=1)
+        # lid_frame.columnconfigure(1, weight=1)
+        # lid_frame.columnconfigure(2, weight=1)
+
+        lid_frame.grid_rowconfigure(0, weight=1)
+        lid_frame.grid_columnconfigure(0, weight=1)
+        lid_frame.grid_columnconfigure(1, weight=1)
+        lid_frame.grid_columnconfigure(2, weight=1)
 
         # Labels and spinboxes
         max_steps_label = tk.Label(lid_frame, text="Max")
@@ -67,8 +72,19 @@ class ControlsFrame(tk.Frame):
 
         self.max_steps_value = tk.IntVar(self, Config.instance().get(Setting.MAX_STEPS))
         self.max_steps_value.trace("w", lambda *args: Config.instance().update(Setting.MAX_STEPS, self.max_steps_value.get()))
-        max_steps_spinbox = tk.Spinbox(lid_frame, from_=0, to=550, width=5, textvariable=self.max_steps_value)
+        max_steps_spinbox = tk.Spinbox(lid_frame, from_=0, to=180, width=5, textvariable=self.max_steps_value)
         max_steps_spinbox.grid(row=0, column=1, sticky="W")  # Align left
+        # "-" button to decrement value
+        decrement_max_step_button = tk.Button(lid_frame, text="-", width=7, command=lambda: self.update_value_lid_max(-1))
+        decrement_max_step_button.grid(row=0, column=2, sticky="W", padx=1, pady=5)
+        decrement_max_step_button.bind("<ButtonPress-1>", lambda event: self.start_continuous_update_lid_max(-1))
+        decrement_max_step_button.bind("<ButtonRelease-1>", self.stop_continuous_update_lid_max)
+
+        # "+" button to increment value
+        increment_max_step_button = tk.Button(lid_frame, text="+", width=7, command=lambda: self.update_value_lid_max(1))
+        increment_max_step_button.grid(row=0, column=3, sticky="W", padx=1, pady=5)
+        increment_max_step_button.bind("<ButtonPress-1>", lambda event: self.start_continuous_update_lid_max(1))
+        increment_max_step_button.bind("<ButtonRelease-1>", self.stop_continuous_update_lid_max)
 
         current_steps_label = tk.Label(lid_frame, text="Current:")
         current_steps_label.grid(row=1, column=0, sticky="E")  # Align right
@@ -85,21 +101,21 @@ class ControlsFrame(tk.Frame):
 
         # TODO: Fix motor moving
         set_zero_point_button = tk.Button(lid_frame, text="Zero", width=12, command=lambda: self.master.dispenser.set_steps_to(0))
-        set_zero_point_button.grid(row=2, column=2, pady=5, padx=10, sticky="ew")  # Span entire cell width
+        set_zero_point_button.grid(row=2, column=2, columnspan=2, pady=5, padx=10, sticky="ew")  # Span entire cell width
 
         # Centering buttons
         left_button = tk.Button(lid_frame, text="Left" if self.master.dispenser.direction < 1 else "Right", width=12,
                                  command=lambda: self.master.dispenser.rotate_stepper(self.stepper_steps.get(), direction=-1))
-        left_button.grid(row=3, column=0, pady=5, padx=10, sticky="ew")  # Span entire cell width
+        left_button.grid(row=3, column=2, pady=5, padx=10, sticky="ew")  # Span entire cell width
 
         right_button = tk.Button(lid_frame, text="Right" if self.master.dispenser.direction < 1 else "Left", width=12,
                                   command=lambda: self.master.dispenser.rotate_stepper(self.stepper_steps.get(), direction=1))
-        right_button.grid(row=3, column=1, pady=5, padx=10, sticky="ew")  # Span entire cell width
+        right_button.grid(row=3, column=3, pady=5, padx=10, sticky="ew")  # Span entire cell width
 
-        # Scale slider, centered and spanning both columns
-        self.speed_scale = tk.Scale(lid_frame, from_=0.001, to=0.0001, orient=tk.HORIZONTAL, length=80, value=0.001)
-        self.speed_scale.set(self.master.dispenser.speed)
-        self.speed_scale.grid(row=4, column=0, columnspan=2, pady=5, padx=15, sticky="ew")  # Center horizontally, span both columns
+        # # Scale slider, centered and spanning both columns
+        # self.speed_scale = tk.Scale(lid_frame, from_=0.001, to=0.0001, orient=tk.HORIZONTAL, length=80, value=0.001)
+        # self.speed_scale.set(self.master.dispenser.speed)
+        # self.speed_scale.grid(row=4, column=0, columnspan=2, pady=5, padx=15, sticky="ew")  # Center horizontally, span both columns
 
         # Closing section
         closing_frame = tk.LabelFrame(control_frame, text="Closing")
@@ -141,7 +157,9 @@ class ControlsFrame(tk.Frame):
 
         # Variables for continuous update
         self.continuous_update = False
+        self.continuous_update_lid_max = False
         self.update_direction = 0
+        self.update_direction_lid_max = 0
         self.update_delay = 200  # Initial delay in milliseconds
 
     def update_value(self, delta):
@@ -149,6 +167,12 @@ class ControlsFrame(tk.Frame):
         current_value = self.close_before_value.get()
         new_value = max(0, current_value + delta)  # Ensure value doesn't go below 0
         self.close_before_value.set(new_value)
+
+    def update_value_lid_max(self, delta):
+        """Update the value by delta."""
+        current_value = self.max_steps_value.get()
+        new_value = min(180, max(0, current_value + delta))  # Clamp between 0 and 180
+        self.max_steps_value.set(new_value)
 
     def start_continuous_update(self, direction):
         """Start continuous update when the button is held down."""
@@ -160,6 +184,16 @@ class ControlsFrame(tk.Frame):
         """Stop continuous update when the button is released."""
         self.continuous_update = False
 
+    def start_continuous_update_lid_max(self, direction):
+        """Start continuous update when the button is held down."""
+        self.continuous_update_lid_max = True
+        self.update_direction_lid_max = direction
+        self.continuous_update_lid_max_loop()
+
+    def stop_continuous_update_lid_max(self, event=None):
+        """Stop continuous update when the button is released."""
+        self.continuous_update_lid_max = False
+
     def continuous_update_loop(self):
         """Continuously update the value while the button is held down."""
         if self.continuous_update:
@@ -167,5 +201,15 @@ class ControlsFrame(tk.Frame):
             # Speed up the update after the first iteration
             self.update_delay = max(50, self.update_delay - 10)  # Minimum delay of 50ms
             self.after(self.update_delay, self.continuous_update_loop)
+        else:
+            self.update_delay = 200  # Reset delay when button is released
+
+    def continuous_update_lid_max_loop(self):
+        """Continuously update the value while the button is held down."""
+        if self.continuous_update_lid_max:
+            self.update_value_lid_max(self.update_direction_lid_max)
+            # Speed up the update after the first iteration
+            self.update_delay = max(50, self.update_delay - 10)  # Minimum delay of 50ms
+            self.after(self.update_delay, self.continuous_update_lid_max_loop)
         else:
             self.update_delay = 200  # Reset delay when button is released

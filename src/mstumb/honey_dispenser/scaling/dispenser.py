@@ -84,8 +84,6 @@ class Dispenser:
         self.lid_controller.set_angle(self.max_steps)  # Fully open the lid
         self.lid_opened = True
 
-
-
     def position_lid(self, current_weight):
         # Calculate lid position based on weight
         if current_weight is not None:
@@ -93,7 +91,7 @@ class Dispenser:
             current_weight += self.close_before_target
 
             # Define weights for lid positioning
-            fully_open_weight = 0  # Lid fully open at 0g
+            fully_open_weight = self.target_weight * 0.8  # Lid fully open at 80% of set weight
             fully_closed_weight = self.target_weight  # Lid fully closed at target weight
 
             # Calculate closure level: 0 (fully open) to 1 (fully closed)

@@ -36,7 +36,7 @@ class Gui(tk.Window):
         # self.label_weight.config(text=f"Target Weight: {} g")
         self.display_frame.label_jars.config(text=f"Jars Filled: {self.dispenser.jars_filled}")
 
-        self.dispenser.speed = self.controls_frame.speed_scale.get()
+        # self.dispenser.speed = self.controls_frame.speed_scale.get()
         # print(self.dispenser.speed)
         self.dispenser.max_steps = self.controls_frame.max_steps_value.get()
         self.dispenser.close_before_target = self.controls_frame.close_before_value.get()
